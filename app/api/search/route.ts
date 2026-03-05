@@ -35,20 +35,43 @@ export async function GET(request: Request) {
 
   const data = await res.json();
 
-  // Normalize to a flat array of image results
-  const images = (data.images ?? []).map((item: {
-    imageUrl?: string;
-    thumbnailUrl?: string;
-    title?: string;
-    link?: string;
-    source?: string;
-  }) => ({
-    imageUrl: item.imageUrl,
-    thumbnailUrl: item.thumbnailUrl,
-    title: item.title,
-    link: item.link,
-    source: item.source,
-  }));
+  // Patterns that indicate a generic listing/gallery page (not a specific project)
+  function isListingPage(url: string): boolean {
+    try {
+      const { hostname, pathname } = new URL(url);
+      const path = pathname.toLowerCase();
+      const host = hostname.replace("www.", "");
+
+      // Generic patterns across all sites
+      if (/\/(search|tags?|categories?|topics?|collections?|explore|discover|popular|trending|following|feed)\b/.test(path)) return true;
+
+      // Site-specific rules: must reach a specific project path
+      if (host === "behance.net" && !path.includes("/gallery/")) return true;
+      if (host === "dribbble.com" && !/\/shots\/\d+/.test(path)) return true;
+      if (host === "awwwards.com" && (path === "/" || path.startsWith("/websites") || path.startsWith("/nominees") && path.split("/").filter(Boolean).length < 2)) return true;
+      if (host === "collectui.com" && path.split("/").filter(Boolean).length < 2) return true;
+
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  const images = (data.images ?? [])
+    .filter((item: { link?: string }) => item.link && !isListingPage(item.link))
+    .map((item: {
+      imageUrl?: string;
+      thumbnailUrl?: string;
+      title?: string;
+      link?: string;
+      source?: string;
+    }) => ({
+      imageUrl: item.imageUrl,
+      thumbnailUrl: item.thumbnailUrl,
+      title: item.title,
+      link: item.link,
+      source: item.source,
+    }));
 
   return NextResponse.json({ images });
 }

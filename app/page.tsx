@@ -88,12 +88,12 @@ export default function Home() {
         `}
       >
         {!searched && (
-          <h1 className="text-5xl font-black tracking-tight mb-8 text-white" style={{ fontFamily: "var(--font-playfair)" }}>
+          <h1 className="text-5xl tracking-tight mb-8 text-white" style={{ fontFamily: "var(--font-playfair)", fontWeight: 400 }}>
             Inspiraaation!
           </h1>
         )}
         {searched && (
-          <span className="text-white font-black text-xl tracking-tight shrink-0" style={{ fontFamily: "var(--font-playfair)" }}>
+          <span className="text-white text-xl tracking-tight shrink-0" style={{ fontFamily: "var(--font-playfair)", fontWeight: 400 }}>
             Inspiraaation!
           </span>
         )}
