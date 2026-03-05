@@ -18,6 +18,8 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(false);
   const [searched, setSearched] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [mode, setMode] = useState<"source" | "explore">("source");
+  const [exploringId, setExploringId] = useState<string | null>(null);
   const currentQueryRef = useRef("");
 
   const fetchImages = useCallback(async (q: string, p: number, append = false) => {
@@ -59,6 +61,33 @@ export default function Home() {
 
   const handleLoadMore = () => setPage((p) => p + 1);
 
+  const handleImageClick = async (img: ImageResult) => {
+    if (mode === "source") {
+      window.open(img.link, "_blank", "noopener");
+      return;
+    }
+    setExploringId(img.imageUrl);
+    try {
+      const res = await fetch("/api/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: img.imageUrl, title: img.title }),
+      });
+      const { query: newQuery } = await res.json();
+      if (newQuery) {
+        setQuery(newQuery);
+        currentQueryRef.current = newQuery;
+        setPage(1);
+        setImages([]);
+        setHasMore(false);
+        setFailedImages(new Set());
+        fetchImages(newQuery, 1, false);
+      }
+    } finally {
+      setExploringId(null);
+    }
+  };
+
   const visibleImages = images.filter((img) => !failedImages.has(img.imageUrl));
 
   return (
@@ -81,6 +110,21 @@ export default function Home() {
           <span className="text-white text-4xl tracking-tight shrink-0" style={{ fontFamily: "var(--font-playfair)", fontWeight: 400 }}>
             Inspiraaation!
           </span>
+        )}
+        {searched && (
+          <div className="ml-auto shrink-0 flex items-center gap-1 bg-white/10 rounded-full p-1">
+            {(["source", "explore"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`px-3 py-1 text-xs rounded-full capitalize transition-all ${
+                  mode === m ? "bg-white text-black font-medium" : "text-white/50 hover:text-white"
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
         )}
         <form
           onSubmit={handleSearch}
@@ -120,7 +164,7 @@ export default function Home() {
                 <div
                   key={`${img.imageUrl}-${i}`}
                   className="break-inside-avoid mb-2 group relative cursor-pointer"
-                  onClick={() => window.open(img.link, "_blank", "noopener")}
+                  onClick={() => handleImageClick(img)}
                 >
                   <img
                     src={img.imageUrl || img.thumbnailUrl}
@@ -131,6 +175,11 @@ export default function Home() {
                       setFailedImages((prev) => new Set([...prev, img.imageUrl]))
                     }
                   />
+                  {exploringId === img.imageUrl && (
+                    <div className="absolute inset-0 rounded-lg bg-black/60 flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
