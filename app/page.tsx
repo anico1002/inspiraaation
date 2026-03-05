@@ -32,7 +32,7 @@ export default function Home() {
       } else {
         setImages(newImages);
       }
-      setHasMore(newImages.length === 20);
+      setHasMore(data.hasMore ?? newImages.length === 20);
     } catch {
       // ignore
     } finally {

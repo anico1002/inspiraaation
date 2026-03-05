@@ -57,15 +57,12 @@ export async function GET(request: Request) {
     }
   }
 
-  const images = (data.images ?? [])
-    .filter((item: { link?: string }) => item.link && !isListingPage(item.link))
-    .map((item: {
-      imageUrl?: string;
-      thumbnailUrl?: string;
-      title?: string;
-      link?: string;
-      source?: string;
-    }) => ({
+  const raw: { link?: string; imageUrl?: string; thumbnailUrl?: string; title?: string; source?: string }[] = data.images ?? [];
+  const hasMore = raw.length >= 20;
+
+  const images = raw
+    .filter((item) => item.link && !isListingPage(item.link))
+    .map((item) => ({
       imageUrl: item.imageUrl,
       thumbnailUrl: item.thumbnailUrl,
       title: item.title,
@@ -73,5 +70,5 @@ export async function GET(request: Request) {
       source: item.source,
     }));
 
-  return NextResponse.json({ images });
+  return NextResponse.json({ images, hasMore });
 }
