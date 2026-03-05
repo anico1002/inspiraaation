@@ -18,7 +18,6 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(false);
   const [searched, setSearched] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const currentQueryRef = useRef("");
 
   const fetchImages = useCallback(async (q: string, p: number, append = false) => {
@@ -52,30 +51,13 @@ export default function Home() {
     fetchImages(query.trim(), 1, false);
   };
 
-  // Infinite scroll
+  // Load more pages
   useEffect(() => {
     if (page === 1) return;
     fetchImages(currentQueryRef.current, page, true);
   }, [page, fetchImages]);
 
-  const loadingRef = useRef(false);
-  useEffect(() => { loadingRef.current = loading; }, [loading]);
-
-  useEffect(() => {
-    if (!hasMore) return;
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !loadingRef.current) {
-          setPage((p) => p + 1);
-        }
-      },
-      { rootMargin: "400px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasMore, images]);
+  const handleLoadMore = () => setPage((p) => p + 1);
 
   const visibleImages = images.filter((img) => !failedImages.has(img.imageUrl));
 
@@ -161,8 +143,17 @@ export default function Home() {
             </p>
           )}
 
-          {/* Sentinel for infinite scroll */}
-          {hasMore && <div ref={sentinelRef} className="h-10" />}
+          {/* Load more button */}
+          {hasMore && !loading && (
+            <div className="flex justify-center py-12">
+              <button
+                onClick={handleLoadMore}
+                className="text-white/40 text-sm hover:text-white transition-colors"
+              >
+                Ver más imágenes →
+              </button>
+            </div>
+          )}
 
           {/* Loading more spinner */}
           {loading && images.length > 0 && (
