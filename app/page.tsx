@@ -88,12 +88,12 @@ export default function Home() {
         `}
       >
         {!searched && (
-          <h1 className="text-5xl font-black tracking-tight mb-8 text-white">
+          <h1 className="text-5xl font-black tracking-tight mb-8 text-white" style={{ fontFamily: "var(--font-playfair)" }}>
             Inspiraaation!
           </h1>
         )}
         {searched && (
-          <span className="text-white font-black text-xl tracking-tight shrink-0">
+          <span className="text-white font-black text-xl tracking-tight shrink-0" style={{ fontFamily: "var(--font-playfair)" }}>
             Inspiraaation!
           </span>
         )}
@@ -138,7 +138,7 @@ export default function Home() {
                   onClick={() => window.open(img.link, "_blank", "noopener")}
                 >
                   <img
-                    src={img.thumbnailUrl || img.imageUrl}
+                    src={img.imageUrl || img.thumbnailUrl}
                     alt=""
                     loading="lazy"
                     className="w-full rounded-lg object-cover transition-opacity duration-300 group-hover:opacity-80"
