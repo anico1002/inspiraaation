@@ -58,21 +58,24 @@ export default function Home() {
     fetchImages(currentQueryRef.current, page, true);
   }, [page, fetchImages]);
 
+  const loadingRef = useRef(false);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+
   useEffect(() => {
-    if (!hasMore || loading) return;
+    if (!hasMore) return;
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !loadingRef.current) {
           setPage((p) => p + 1);
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: "400px" }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loading, images]);
+  }, [hasMore, images]);
 
   const visibleImages = images.filter((img) => !failedImages.has(img.imageUrl));
 
@@ -83,12 +86,12 @@ export default function Home() {
         className={`
           transition-all duration-500
           ${searched
-            ? "sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-white/10 px-6 py-3 flex items-center gap-4"
+            ? "sticky top-0 z-10 bg-black/90 backdrop-blur-sm border-b border-white/10 px-6 py-3 flex items-center gap-4 relative"
             : "flex flex-col items-center justify-center min-h-screen px-6"}
         `}
       >
         {!searched && (
-          <h1 className="text-5xl tracking-tight mb-8 text-white" style={{ fontFamily: "var(--font-playfair)", fontWeight: 400 }}>
+          <h1 className="text-8xl tracking-tight mb-10 text-white" style={{ fontFamily: "var(--font-playfair)", fontWeight: 400 }}>
             Inspiraaation!
           </h1>
         )}
@@ -99,7 +102,7 @@ export default function Home() {
         )}
         <form
           onSubmit={handleSearch}
-          className={searched ? "flex-1 max-w-2xl" : "w-full max-w-xl"}
+          className={searched ? "absolute left-1/2 -translate-x-1/2 w-full max-w-2xl px-4" : "w-full max-w-2xl"}
         >
           <input
             type="text"
