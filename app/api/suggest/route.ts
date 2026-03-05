@@ -40,9 +40,25 @@ export async function POST(request: Request) {
 
   try {
     const client = new Anthropic({ apiKey });
+    const prompt = `You are a design expert. Analyze this image and identify its MOST DISTINCTIVE visual attributes across these dimensions:
+
+1. COLOR: Specific hues (e.g. "electric blue", "sage green", "warm coral" — never just "blue" or "green")
+2. THEME: dark mode / light mode / colorful / monochrome
+3. UI TYPE: mobile app / web dashboard / landing page / marketing / branding / illustration / icon set
+4. VISUAL STYLE: minimal / glassmorphism / neumorphism / flat / gradient-heavy / brutalist / editorial / 3D / illustrated / retro
+5. LAYOUT: card grid / hero section / split screen / full-bleed / tabular / timeline / feed
+6. DISTINCTIVE ELEMENTS: the 1-2 most unique visual components or patterns visible
+7. MOOD/SECTOR: premium / playful / corporate / startup / health / fintech / e-commerce / productivity / social
+
+Combine the MOST DISTINCTIVE attributes (those that make this image unique, not generic design terms) into a search query of 10-14 words.
+
+Image title for context: "${title}"
+
+Return ONLY the search query. No explanation, no punctuation, no quotes.`;
+
     const msg = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 60,
+      max_tokens: 150,
       messages: [
         {
           role: "user",
@@ -51,10 +67,7 @@ export async function POST(request: Request) {
               type: "image",
               source: { type: "base64", media_type: mediaType, data: base64 },
             },
-            {
-              type: "text",
-              text: `Design image titled: "${title}". Generate a 4-6 word search query to find visually similar designs on Dribbble/Behance/Awwwards. Focus on: visual style, colors, UI type, layout, mood. Return ONLY the query, nothing else.`,
-            },
+            { type: "text", text: prompt },
           ],
         },
       ],
