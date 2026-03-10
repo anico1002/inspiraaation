@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} bg-black text-white antialiased`}>{children}</body>
+      <body className={`${playfair.variable} bg-black text-white antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
